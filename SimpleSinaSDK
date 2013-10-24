@@ -32,7 +32,8 @@
 	}
 	
 	/**
-	* 连接API，获取结果
+	* 连接API，获取结果，只需要获取到Sina API OAuth2 的Access_token 就可以了。
+	* 获取Access_token 的简单方法 就是用他们的API测试工具,这个容易找到
 	*/
 	public static String showurl(String url, String access_token) {
 		String str = "";
