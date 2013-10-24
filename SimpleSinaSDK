@@ -1,0 +1,78 @@
+public static HttpURLConnection getHttpConnection(String url)
+			throws IOException {
+		URL annUrl = new URL(url);
+		HttpURLConnection urlconn = (HttpURLConnection) annUrl.openConnection();
+		urlconn.setConnectTimeout(1 * 60 * 1000);
+		urlconn.setReadTimeout(1 * 60 * 1000);
+		return urlconn;
+}
+
+	private static class TrustAnyTrustManager implements X509TrustManager {
+
+		public void checkClientTrusted(X509Certificate[] chain, String authType)
+				throws CertificateException {
+		}
+
+		public void checkServerTrusted(X509Certificate[] chain, String authType)
+				throws CertificateException {
+		}
+
+		public X509Certificate[] getAcceptedIssuers() {
+			return new X509Certificate[] {};
+		}
+	}
+
+	private static class TrustAnyHostnameVerifier implements HostnameVerifier {
+		public boolean verify(String hostname, SSLSession session) {
+			return true;
+		}
+	}
+	
+	
+	public static String showurl(String url, String access_token) {
+		String str = "";
+		try {
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, new TrustManager[] { new TrustAnyTrustManager() },
+					new java.security.SecureRandom());
+			HttpsURLConnection urlconn = (HttpsURLConnection) getHttpConnection("https://api.weibo.com/2/short_url/shorten.json?url_long="
+					+ URLEncoder.encode(url, "utf-8")
+					+ "&access_token="
+					+ access_token);
+			urlconn.setSSLSocketFactory(sc.getSocketFactory());
+			urlconn.setHostnameVerifier(new TrustAnyHostnameVerifier());
+			urlconn.setRequestProperty("Authorization", "OAuth2 "
+					+ access_token);
+			urlconn.setRequestProperty("Host", "api.weibo.com");
+			urlconn.setRequestMethod("POST");
+
+			if (urlconn.getResponseCode() == 200) {
+				BufferedReader in = null;
+				try {
+					in = new BufferedReader(new InputStreamReader(urlconn
+							.getInputStream(), "UTF-8"));
+					String line = null;
+					String strres = "";
+					while ((line = in.readLine()) != null) {
+						strres = strres + line;
+					}
+					if (null != strres && !strres.isEmpty()) {
+						JSONObject urls = new JSONObject(strres);
+						JSONArray jsonarray = new JSONArray(urls
+								.getString("urls"));
+						JSONObject jurl = jsonarray.getJSONObject(0);
+						str = jurl.getString("url_short");
+					}
+				} catch (Exception ex) {
+					log.error("读取微博数据流错误", ex.fillInStackTrace());
+				} finally {
+					if (null != in)
+						in.close();
+				}
+			}
+		} catch (Exception ex) {
+			System.out.println(ex.fillInStackTrace());
+			log.error("抓取微博数据错误", ex.fillInStackTrace());
+		}
+		return str;
+	}
