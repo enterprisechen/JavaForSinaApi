@@ -1,11 +1,14 @@
-public static HttpURLConnection getHttpConnection(String url)
+        /**
+        * 生成网络连接的方法
+        */
+        public static HttpURLConnection getHttpConnection(String url)
 			throws IOException {
 		URL annUrl = new URL(url);
 		HttpURLConnection urlconn = (HttpURLConnection) annUrl.openConnection();
 		urlconn.setConnectTimeout(1 * 60 * 1000);
 		urlconn.setReadTimeout(1 * 60 * 1000);
 		return urlconn;
-}
+        }
 
 	private static class TrustAnyTrustManager implements X509TrustManager {
 
@@ -28,7 +31,9 @@ public static HttpURLConnection getHttpConnection(String url)
 		}
 	}
 	
-	
+	/**
+	* 连接API，获取结果
+	*/
 	public static String showurl(String url, String access_token) {
 		String str = "";
 		try {
